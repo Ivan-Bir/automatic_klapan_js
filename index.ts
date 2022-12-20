@@ -13,14 +13,14 @@ let t = inits.t;
 
 let currParameters: MathModelObject = {
     functionalParams: {...inits.boundaryConditions}, // копирование объекта инициализации для 0-й итерации
-    options: { // Параметры, необходимые уже на первой интерации расчёта
+    options: { // Параметры, необходимые уже на первой итерации расчёта
         m2: inits.m2,
         m4: inits.m4,
         f1: props.m1*areaCirc(props.d1),
         f3: props.m3*areaCirc(props.d3),
         f6: props.m6*areaCirc(props.d6),
         f8: props.m8*areaCirc(props.d8),
-        fkp: areaCirc(0.0175),
+        fkp: areaCirc(0.0175), //?
     }
 };
 
@@ -97,7 +97,7 @@ console.log('SUCCESS');
 // Давление на выходе p2 [Па]
 // Температура в области T [К]
 function MassFlow(f:number, p1:number, p2:number, T:number) {
-    const { k, R, bk } = props;
+    const { k, R, bk } = props; // Деструктурирующее присваивание - "достаёт" перечисленные переменные из объекта
     if (p2/p1 <= bk) {
         return f*p1*Math.sqrt(2*k/((k-1)*R*T)*Math.abs(Math.pow(bk,(2/k))-Math.pow(bk,((k+1)/k))));
     }
@@ -280,7 +280,7 @@ function MathModelOpenIteration(params: MathModelCharacteristics, mutableOptions
     const {Cp, ktr, x0, M} = props;
     const CoefXp = params.Vp;
     const CoefVp = (mutableOptions.fkl*params.P1-mutableOptions.fkp*params.P3-ktr*params.Vp-Cp*(x0+params.Xp)
-         + pa*areaCirc(0.016)-params.P4*(areaCirc(0.016)-areaCirc(0.004)))/M;
+         + pa*areaCirc(0.016)-params.P4*(areaCirc(0.016)-areaCirc(0.004)))/M; //???
     const Coef_Xp = params._Vp;
     const Coef_Vp = -CoefVp;
 
@@ -352,8 +352,8 @@ function updateParameters(params: MathModelCharacteristics, RK_0: RK_factors, RK
     return updatedParams as MathModelCharacteristics;
 }
 
-function updateState(st:State, params:MathModelCharacteristics):State {
-    if (st.isClosed) {
+function updateState(oldState:State, params:MathModelCharacteristics):State {
+    if (oldState.isClosed) {
         return {
             isClosed: 0,
             isOpened: 0,
@@ -364,7 +364,7 @@ function updateState(st:State, params:MathModelCharacteristics):State {
         };
     }
 
-    if (0.9*params.P3 <= inits.pa && st.fromCloseToOpen) {
+    if (0.9*params.P3 <= inits.pa && oldState.fromCloseToOpen) {
         return {
             isClosed: 0,
             isOpened: 0,
@@ -375,7 +375,7 @@ function updateState(st:State, params:MathModelCharacteristics):State {
         };
     }
 
-    if (0.95*params.P3 <= inits.pa && st.isRabProcess) {
+    if (0.95*params.P3 <= inits.pa && oldState.isRabProcess) {
         return {
             isClosed: 0,
             isOpened: 0,
@@ -386,7 +386,7 @@ function updateState(st:State, params:MathModelCharacteristics):State {
         };
     }
 
-    if (params.P3 > 0.9*inits.pvh && st.isOpened) {
+    if (params.P3 > 0.9*inits.pvh && oldState.isOpened) {
         return {
             isClosed: 0,
             isOpened: 0,
@@ -397,5 +397,5 @@ function updateState(st:State, params:MathModelCharacteristics):State {
         };
     }
 
-    return st;
+    return oldState;
 }

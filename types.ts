@@ -75,7 +75,7 @@ export interface MathModelCharacteristics {
     Ta: number,
     Xp: number,
     Vp: number,
-    _Xp:number,
+    _Xp: number,
     _Vp: number,
 };
 
